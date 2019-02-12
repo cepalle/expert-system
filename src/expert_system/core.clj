@@ -1,6 +1,7 @@
 (ns expert-system.core)
 
 (load "lexer")
+(load "parser")
 
 (defn open-file-lines [fileName]
   (with-open [rdr (clojure.java.io/reader fileName)]
@@ -16,6 +17,8 @@
 (defn -main [& args]
   (let [lines  (open-file-lines (first args))
         tokens (lines->tokens lines)]
-    (println tokens))
+    (println tokens)
+    (let [graph-exp (tokens->graph-exp tokens)]
+      (println graph-exp)))
   ;(my-print-list tokens)
   )

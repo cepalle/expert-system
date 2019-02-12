@@ -12,6 +12,11 @@
 (defn ExampleFileExist []
   (println (.exists (clojure.java.io/file "Example.txt"))))
 
+(defn MyPrint [s]
+  (println (str "coucou" s "kookoo")))
+
 (defn -main [& args]
-  (println (ExampleLine (first args))))
+  (def res (ExampleLine (first args)))
+  (doseq [item res]
+    (println item)))
 

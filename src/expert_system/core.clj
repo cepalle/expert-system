@@ -1,8 +1,6 @@
 (ns expert-system.core)
 
-(require
- '[clojure.string :as str])
-
+(load "lexer")
 
 (defn open-file-lines [fileName]
   (println (str "open: " fileName))
@@ -11,16 +9,6 @@
 
 (defn file-exists? []
   (println (.exists (clojure.java.io/file "Example.txt"))))
-
-(defn line->tokens [line]
-  (str/split line #" "))
-
-(defn lines->tokens [lines]
-  (def splitLine (mapcat line->tokens lines))
-  (filter
-   (fn [x] (not (= (count x) 0)))
-   splitLine))
-
 
 (defn my-print-list [list]
   (doseq [item list]

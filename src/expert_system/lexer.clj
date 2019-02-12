@@ -8,6 +8,9 @@
 
 (def valid-char "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz()!+|^=<>")
 
+(defn letter? [x]
+  (in? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" x))
+
 (defn del-com [line]
   (first (str/split line #"#")))
 
@@ -15,9 +18,24 @@
   (filter (fn [x] (not (in? " \t\n" x))) line))
 
 
-(defn lines->tokens [lines]
-  (def ls-del-com (map del-com lines))
-  (def ls-del-space (map del-space ls-del-com))
+(defn get-field-name
+  ([line]
+   (if (letter? (first line))
+     (get-field-name (first line) (rest line))
+     ["", line]))
+  ([token line]
+   (if (letter? (first line))
+     (get-field-name (concat token (first line)) (rest line))
+     [token line])))
 
-  ls-del-space)
+(defn line->token [line]
+  (def first-c (first line))
+  (cond
+    (= first-c nil)        ""
+;    (letter? first-c)      (let [[token rest] (get-field-name line)]
+;                             (concat token (line->token rest)))
+    (in? "()!+|^" first-c) (concat first-c (line->token (rest line)))
+    :else                  (concat "@" (line->token (rest line)))))
+
+(defn lines->tokens [lines] (mapcat line->token lines))
 

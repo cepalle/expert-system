@@ -15,10 +15,10 @@
     (println item)))
 
 (defn -main [& args]
-  (def lines (open-file-lines (first args)))
-  ;(my-print-list lines)
-  (def tokens (lines->tokens lines))
-  (my-print-list tokens)
+  (let [lines  (open-file-lines (first args))
+        tokens (lines->tokens lines)]
+    (println tokens))
+  ;(my-print-list tokens)
   (comment
     (println
      (line->tokens "dlkjndskdjl dqlkdq lejdqs# ljfnsdlfkjn######fkljnfdljksn"))

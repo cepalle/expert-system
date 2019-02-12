@@ -1,15 +1,7 @@
 (require
  '[clojure.string :as str])
 
-(defn in?
-  "true if coll contains elm"
-  [coll elm]
-  (some #(= elm %) coll))
-
-(def valid-char "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz()!+|^=<>")
-
-(defn letter? [x]
-  (in? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" x))
+(load "util")
 
 (defn del-com [line]
   (first (str/split line #"#")))
@@ -17,25 +9,20 @@
 (defn del-space [line]
   (filter (fn [x] (not (in? " \t\n" x))) line))
 
+; TODO handel error
 
-(defn get-field-name
-  ([line]
-   (if (letter? (first line))
-     (get-field-name (first line) (rest line))
-     ["", line]))
-  ([token line]
-   (if (letter? (first line))
-     (get-field-name (concat token (first line)) (rest line))
-     [token line])))
+(defn list-char->tokens [list-char]
+  (let [frst-char (first list-char)]
+    (cond
+      (= frst-char nil)                                                                                             '("EOL")
+      (= \# frst-char)                                                                                              '("EOL")
+      (in? (seq " ") frst-char)                                                                                     (list-char->tokens (rest list-char))
+      (in? (seq "=<>") frst-char)                                                                                   (conj (list-char->tokens (rest list-char)) "TODO")
+      (in? (seq "()!+|^") frst-char)                                                                                (conj (list-char->tokens (rest list-char)) frst-char)
+      (in? (seq "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") frst-char)                                  (conj (list-char->tokens (rest list-char)) frst-char)
+      :else                                                                                                         (list-char->tokens (rest list-char)))))
 
-(defn line->token [line]
-  (def first-c (first line))
-  (cond
-    (= first-c nil)        ""
-;    (letter? first-c)      (let [[token rest] (get-field-name line)]
-;                             (concat token (line->token rest)))
-    (in? "()!+|^" first-c) (concat first-c (line->token (rest line)))
-    :else                  (concat "@" (line->token (rest line)))))
+(defn line->tokens [line]
+  (list-char->tokens (seq line)))
 
-(defn lines->tokens [lines] (mapcat line->token lines))
-
+(defn lines->tokens [lines] (mapcat line->tokens lines))

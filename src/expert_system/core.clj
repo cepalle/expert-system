@@ -3,7 +3,6 @@
 (load "lexer")
 
 (defn open-file-lines [fileName]
-  ;(println (str "open: " fileName))
   (with-open [rdr (clojure.java.io/reader fileName)]
     (reduce conj [] (line-seq rdr))))
 
@@ -19,21 +18,4 @@
         tokens (lines->tokens lines)]
     (println tokens))
   ;(my-print-list tokens)
-  (comment
-    (println
-     (line->tokens "dlkjndskdjl dqlkdq lejdqs# ljfnsdlfkjn######fkljnfdljksn"))
-    (println "---")
-    (println
-     (line->tokens "#dd"))
-    (println "---")
-    (println
-     (line->tokens "dsds#"))
-    (println "---")
-    (println
-     (line->tokens "dsds#   "))
-    (println "---")
-    (println
-     (line->tokens "dsds#   #####"))
-    (println "---")
-    (println
-     (line->tokens "##dsds#"))))
+  )

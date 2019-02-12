@@ -29,12 +29,14 @@
 
 (defn get-token-multi-char [list-char next]
   (let [frst-char (first list-char)
-        scnd-char (second list-char)]
+        scnd-char (second list-char)
+        thrd-char (second (rest list-char))]
     (cond
-      (and (= frst-char \<) (= scnd-char \=)) (conj (next (rest (rest list-char))) :impl-left)
-      (and (= frst-char \=) (= scnd-char \>)) (conj (next (rest (rest list-char))) :impl-right)
-      (= frst-char \=)                        (conj (next (rest list-char)) :queries)
-      :else                                   (next (rest list-char)))))
+      (and (= frst-char \<) (= scnd-char \=) (= thrd-char \>)) (conj (next (rest (rest list-char))) :equival)
+      (and (= frst-char \<) (= scnd-char \=))                  (conj (next (rest (rest list-char))) :impl-left)
+      (and (= frst-char \=) (= scnd-char \>))                  (conj (next (rest (rest list-char))) :impl-right)
+      (= frst-char \=)                                         (conj (next (rest list-char)) :queries)
+      :else                                                    (next (rest list-char)))))
 
 (defn list-char->tokens [idx list-char]
   (let [frst-char (first list-char)

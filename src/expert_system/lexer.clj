@@ -1,6 +1,3 @@
-(require
- '[clojure.string :as str])
-
 (load "util")
 
 (defn choose-token-mono-char [c]

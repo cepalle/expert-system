@@ -8,13 +8,11 @@
        (and (= re 1) (= val 1))     (merge (gen-next-map 1 (into (sorted-map) (rest map-var))) {key 0})
        :else                        (merge map-var {key 1})))))
 
-(defn gen-all-map [map-true map-var]
-  (println "map-var: " map-var)
-  (let [map-var-next (gen-next-map map-var)]
-    (println "map-var-next: " map-var-next)
-    (if (some (fn [[key val]] (= val 0)) map-var-next)
-      (conj (gen-all-map map-true map-var-next) (merge map-var-next map-true))
-      '((merge map-var-next map-true)))))
+(defn print-all-map-var [map-var]
+  (println map-var)
+  (let [mp-var-next (gen-next-map map-var)]
+    (if (some (fn [[key val]] (= val 0)) mp-var-next)
+      (print-all-map-var mp-var-next))))
 
 ; --- UTILS
 (defn init-map [keys val]
@@ -44,4 +42,4 @@
         field-in-exps-not-in-facts (filter #(not (in? facts %)) field-in-exps)
         map-true                   (init-map facts 1)
         map-var                    (init-map field-in-exps-not-in-facts 0)]
-    (println (gen-all-map map-true map-var))))
+    (print-all-map-var map-var)))

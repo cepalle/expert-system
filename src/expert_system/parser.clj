@@ -31,7 +31,7 @@
    (let [frst (first tokens)
          rst  (rest tokens)]
      (cond
-       (= frst nil)                                (reverse exp)
+       (= frst nil)                                (parse-par (reverse exp))
        (and (= frst :par-open) (= nb-par-open 0))  (parse-par exp in-par (inc nb-par-open) rst)
        (and (= frst :par-open) (> nb-par-open 0))  (parse-par exp (conj in-par frst) (inc nb-par-open) rst)
        (and (= frst :par-close) (= nb-par-open 1)) (parse-par (conj exp (list :par (parse-par (reverse in-par)))) '() (dec nb-par-open) rst)
@@ -39,7 +39,7 @@
        (> nb-par-open 0)                           (parse-par exp (conj in-par frst) nb-par-open rst)
        :else                                       (parse-par (conj exp frst) in-par nb-par-open rst)))))
 
-(def tokens->exp (comp parse-and parse-neg parse-par))
+(def tokens->exp parse-par)
 
 ; --- EOF
 (defn graph-eof

@@ -11,5 +11,5 @@
 example:
 
 ```
-lein run test/sujet.txt
+lein run test/simple.txt
 ```

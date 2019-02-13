@@ -1,4 +1,4 @@
-k => A + B
-A + B => C
+K => A | B
+A | B => C
 =K
-?C
+?ABCKO

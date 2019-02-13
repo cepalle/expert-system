@@ -25,12 +25,13 @@
         :else       true))))
 
 (defn check-map-var-exps? [map-var exps]
-  (reduce
-   (fn [has-false exp]
-     (if has-false
-       false
-       (check-map-var-exp? map-var exp)))
-   false exps))
+  (not
+    (reduce
+     (fn [has-false exp]
+       (if has-false
+         true
+         (not (check-map-var-exp? map-var exp))))
+     false exps)))
 
 ; --- MAP VAR
 (defn gen-next-map [map-var]
@@ -68,8 +69,26 @@
   (filter #(not (= nil %)) (set (flatten (map exp->fields exps)))))
 
 ; --- RESOLVE
+
+(defn get-maps-good [map-var-init map-true exps]
+  (loop [maps-good '()
+         map-var   map-var-init]
+    (let [maps-good-next (if (check-map-var-exps? (merge map-var map-true) exps)
+                           (conj maps-good map-var)
+                           maps-good)]
+      (if (some (fn [[key val]] (= val false)) map-var)
+        (recur maps-good-next (gen-next-map map-var))
+        maps-good-next))))
+
+(defn get-field-res [maps-var-good map-true queri]
+  (cond
+    (= (get map-true queri) true)                         true
+    (some #(= (get % queri) nil) maps-var-good)           nil
+    (not (some #(= (get % queri) true) maps-var-good))    false
+    (not (some #(= (get % queri) false) maps-var-good))   true
+    :else                                                 nil))
+
 (defn resolve-grph [st-parser]
-  (println "--- RESOLVE")
   (let [queris                     (:queries st-parser)
         facts                      (:facts st-parser)
         exps                       (:exps st-parser)
@@ -77,7 +96,19 @@
         field-in-exps-not-in-facts (filter #(not (in? facts %)) field-in-exps)
         map-true                   (init-map facts true)
         map-var                    (init-map field-in-exps-not-in-facts false)]
+
+    (println "--- RESOLVE CALLBACK")
     (all-map-var-callback map-var
                           (fn [mp-var]
                             (let [full-map (merge mp-var map-true)]
-                              (println full-map (check-map-var-exps? full-map exps)))))))
+                              (println full-map (check-map-var-exps? full-map exps)))))
+
+    (let [maps-var-good (get-maps-good map-var map-true exps)]
+
+      (println "--- RESOLVE MAPS GOOD")
+      (doseq [map-var-good maps-var-good]
+        (println map-var-good (check-map-var-exps? (merge map-var-good map-true) exps)))
+
+      (println "--- RESOLVE MAPS RESULT")
+      (doseq [queri queris]
+        (println queri (get-field-res maps-var-good map-true queri))))))

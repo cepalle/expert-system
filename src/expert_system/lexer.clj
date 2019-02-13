@@ -18,7 +18,7 @@
       (and (= frst-char \<) (= scnd-char \=) (= thrd-char \>)) (conj (next (rest (rest list-char))) :equival)
       (and (= frst-char \<) (= scnd-char \=))                  (conj (next (rest (rest list-char))) :impl-left)
       (and (= frst-char \=) (= scnd-char \>))                  (conj (next (rest (rest list-char))) :impl-right)
-      (= frst-char \=)                                         (conj (next (rest list-char)) :queries)
+      (= frst-char \=)                                         (conj (next (rest list-char)) :facts)
       :else                                                    (next (rest list-char)))))
 
 (defn list-char->tokens [idx list-char]

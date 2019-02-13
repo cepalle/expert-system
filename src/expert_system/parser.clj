@@ -1,20 +1,44 @@
 (load "util")
 
 ; --- EXP
-(defn parse-and
-  ([with-neg]
-   (if (in? with-neg :and)
-     (parse-and '() with-neg)
-     with-neg))
-  ([exp with-neg]
-   (let [frst (first with-neg)
-         scnd (second with-neg)
-         thrd (second (rest with-neg))]
-     (cond
-       (= thrd nil)  (parse-and (reverse exp))
-       (= scnd :and) (parse-and
-                       (concat (reverse (conj exp (list :and frst thrd))) (rest (rest (rest with-neg)))))
-       :else         (parse-and (conj exp frst) (rest with-neg))))))
+(comment
+  (defn parse-and
+    ([with-neg]
+     (if (in? with-neg :and)
+       (parse-and '() with-neg)
+       with-neg))
+    ([exp with-neg]
+     (let [frst (first with-neg)
+           scnd (second with-neg)
+           thrd (second (rest with-neg))]
+       (cond
+         (= thrd nil)  (parse-and (reverse exp))
+         (= scnd :and) (parse-and
+                        (concat (reverse (conj exp (list :and frst thrd))) (rest (rest (rest with-neg)))))
+         :else         (parse-and (conj exp frst) (rest with-neg)))))))
+
+(defn make-parse-arity-2 [op next]
+  (fn parse-fn
+    ([exps]
+     (if (in? exps op)
+       (parse-fn '() exps)
+       (next exps)))
+    ([exps-befor exps-after]
+     (let [frst (first exps-after)
+           scnd (second exps-after)
+           thrd (second (rest exps-after))]
+       (cond
+         (= thrd nil)  (parse-fn (reverse exps-befor))
+         (= scnd op)   (parse-fn
+                        (concat (reverse (conj exps-befor (list op frst thrd))) (rest (rest (rest exps-after)))))
+         :else         (parse-fn (conj exps-befor frst) (rest exps-after)))))))
+
+(def parse-equival (make-parse-arity-2 :equival identity))
+(def parse-impl-right (make-parse-arity-2 :impl-right parse-equival))
+(def parse-impl-left (make-parse-arity-2 :impl-left parse-impl-right))
+(def parse-xor (make-parse-arity-2 :xor parse-impl-left))
+(def parse-or (make-parse-arity-2 :or parse-xor))
+(def parse-and (make-parse-arity-2 :and parse-or))
 
 (defn parse-neg
   ([with-par]

@@ -20,6 +20,6 @@
     (println tokens)
     (let [graph-exp (parser tokens)]
       (println "---")
-      (my-print-list (filter #(> (count %) 0) graph-exp)))
+      (my-print-list graph-exp))
   ;(my-print-list tokens)
   ))

@@ -82,6 +82,4 @@
 ; --- PARSER
 (defn parser [tokens]
   (let [splt-eof (split-eof tokens)]
-    (println "---")
-    (println splt-eof)
-    (map tokens->exp splt-eof)))
+    (filter #(> (count %) 0) (map tokens->exp splt-eof))))

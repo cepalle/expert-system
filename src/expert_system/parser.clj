@@ -39,10 +39,7 @@
        (> nb-par-open 0)                           (parse-par exp (conj in-par frst) nb-par-open rst)
        :else                                       (parse-par (conj exp frst) in-par nb-par-open rst)))))
 
-(defn tokens->exp [tokens]
-  (let [with-par (parse-par tokens)
-        with-neg (parse-neg with-par)]
-    with-neg))
+(def tokens->exp (comp parse-and parse-neg parse-par))
 
 ; --- EOF
 (defn graph-eof

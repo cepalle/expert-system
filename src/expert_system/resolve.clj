@@ -27,10 +27,9 @@
 (defn check-map-var-exps? [map-var exps]
   (reduce
    (fn [has-false exp]
-     (cond
-       (has-false)                            false
-       (not (check-map-var-exp? map-var exp)) false
-       :else                                  (check-map-var-exps? map-var (rest exps))))
+     (if has-false
+       false
+       (check-map-var-exp? map-var exp)))
    false exps))
 
 ; --- MAP VAR
@@ -41,18 +40,19 @@
       val                          (merge (gen-next-map (into (sorted-map) (rest map-var))) {key false})
       :else                        (merge map-var {key true}))))
 
+(defn all-map-var-callback [map-var callback]
+  (callback map-var)
+  (loop [mp-var map-var]
+    (let [mp-var-next (gen-next-map mp-var)]
+      (callback mp-var-next)
+      (if (some (fn [[key val]] (= val false)) mp-var-next)
+        (recur mp-var-next)))))
+
 ; --- UTILS
 (defn init-map [keys val]
   (cond
     (= (first keys) nil) nil
     :else                (merge {(first keys) val} (init-map (rest keys) val))))
-
-(defn print-all-map-var [map-var]
-  (loop [mp-var map-var]
-    (let [mp-var-next (gen-next-map mp-var)]
-      (println mp-var-next)
-      (if (some (fn [[key val]] (= val false)) mp-var-next)
-        (recur mp-var-next)))))
 
 ; --- EXTRACT FIELD
 (defn exp->fields [exp]
@@ -69,6 +69,7 @@
 
 ; --- RESOLVE
 (defn resolve-grph [st-parser]
+  (println "--- RESOLVE")
   (let [queris                     (:queries st-parser)
         facts                      (:facts st-parser)
         exps                       (:exps st-parser)
@@ -76,4 +77,7 @@
         field-in-exps-not-in-facts (filter #(not (in? facts %)) field-in-exps)
         map-true                   (init-map facts true)
         map-var                    (init-map field-in-exps-not-in-facts false)]
-    (print-all-map-var map-var)))
+    (all-map-var-callback map-var
+                          (fn [mp-var]
+                            (let [full-map (merge mp-var map-true)]
+                              (println full-map (check-map-var-exps? full-map exps)))))))

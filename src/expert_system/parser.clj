@@ -2,8 +2,17 @@
 
 ; --- EXP
 (defn parse-neg
-  ([with-par] with-par)
-  ([]))
+  ([with-par]
+   (if (in? with-par :neg)
+     (parse-neg '() with-par)
+     with-par))
+  ([exp with-par]
+   (let [frst (first with-par)
+         rst  (rest with-par)]
+     (cond
+       (= frst nil)  (reverse exp)
+       (= frst :neg) (parse-neg (conj exp (list :neg (first rst))) (rest rst))
+       :else         (parse-neg (conj exp frst) rst)))))
 
 (defn parse-par
   ([tokens]

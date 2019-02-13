@@ -1,18 +1,26 @@
 (load "util")
 
 ; --- EXP
+(defn parse-and
+  ([with-neg]
+   (if (in? with-neg :and)
+     (parse-and '() with-neg)
+     with-neg))
+  ([exp with-neg]
+   with-neg))
+
 (defn parse-neg
   ([with-par]
    (if (in? with-par :neg)
      (parse-neg '() with-par)
-     with-par))
+     (parse-and with-par)))
   ([exp with-par]
    (let [frst (first with-par)
          rst  (rest with-par)]
      (cond
-       (= frst nil)  (reverse exp)
-       (= frst :neg) (parse-neg (conj exp (list :neg (first rst))) (rest rst))
-       :else         (parse-neg (conj exp frst) rst)))))
+       (= frst nil)                                   (parse-neg (reverse exp))
+       (and (= frst :neg) (not (= (first rst) :neg))) (parse-neg (conj exp (list :neg (first rst))) (rest rst))
+       :else                                          (parse-neg (conj exp frst) rst)))))
 
 (defn parse-par
   ([tokens]

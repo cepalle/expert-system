@@ -7,7 +7,14 @@
      (parse-and '() with-neg)
      with-neg))
   ([exp with-neg]
-   with-neg))
+   (let [frst (first with-neg)
+         scnd (second with-neg)
+         thrd (second (rest with-neg))]
+     (cond
+       (= thrd nil)  (parse-and (reverse exp))
+       (= scnd :and) (parse-and
+                       (concat (reverse (conj exp (list :and frst thrd))) (rest (rest (rest with-neg)))))
+       :else         (parse-and (conj exp frst) (rest with-neg))))))
 
 (defn parse-neg
   ([with-par]

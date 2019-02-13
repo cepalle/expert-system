@@ -1,22 +1,6 @@
 (load "util")
 
 ; --- EXP
-(comment
-  (defn parse-and
-    ([with-neg]
-     (if (in? with-neg :and)
-       (parse-and '() with-neg)
-       with-neg))
-    ([exp with-neg]
-     (let [frst (first with-neg)
-           scnd (second with-neg)
-           thrd (second (rest with-neg))]
-       (cond
-         (= thrd nil)  (parse-and (reverse exp))
-         (= scnd :and) (parse-and
-                        (concat (reverse (conj exp (list :and frst thrd))) (rest (rest (rest with-neg)))))
-         :else         (parse-and (conj exp frst) (rest with-neg)))))))
-
 (defn make-parse-arity-2 [op next]
   (fn parse-fn
     ([exps]
@@ -57,7 +41,7 @@
   ([tokens]
    (if (in? tokens :par-open)
      (parse-par '() '() 0 tokens)
-     (parse-neg tokens)))
+     (first (parse-neg tokens))))
   ([exp in-par nb-par-open tokens]
    (let [frst (first tokens)
          rst  (rest tokens)]
@@ -70,7 +54,11 @@
        (> nb-par-open 0)                           (parse-par exp (conj in-par frst) nb-par-open rst)
        :else                                       (parse-par (conj exp frst) in-par nb-par-open rst)))))
 
-(def tokens->exp parse-par)
+(defn tokens->exp [tokens]
+  (cond
+    (= (first tokens) :queries) tokens
+    (= (first tokens) :facts)   tokens
+    :else                       (parse-par tokens)))
 
 ; --- EOF
 (defn graph-eof
@@ -94,4 +82,6 @@
 ; --- PARSER
 (defn parser [tokens]
   (let [splt-eof (split-eof tokens)]
+    (println "---")
+    (println splt-eof)
     (map tokens->exp splt-eof)))

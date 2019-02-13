@@ -19,6 +19,7 @@
         tokens (lines->tokens lines)]
     (println tokens)
     (let [graph-exp (tokens->graph-exp tokens)]
+      (println "---")
       (println graph-exp)))
   ;(my-print-list tokens)
   )

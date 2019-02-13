@@ -36,3 +36,5 @@
   (list-char->tokens idx (seq line)))
 
 (defn lines->tokens [lines] (mapcat line->tokens (map-indexed vector lines)))
+
+(defn lexer [lines] (lines->tokens lines))

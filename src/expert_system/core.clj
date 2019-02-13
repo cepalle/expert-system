@@ -16,9 +16,9 @@
 
 (defn -main [& args]
   (let [lines  (open-file-lines (first args))
-        tokens (lines->tokens lines)]
+        tokens (lexer lines)]
     (println tokens)
-    (let [graph-exp (tokens->graphs tokens)]
+    (let [graph-exp (parser tokens)]
       (println "---")
       (println(filter #(> (count %) 0) graph-exp)))
   ;(my-print-list tokens)

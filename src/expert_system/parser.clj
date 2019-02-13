@@ -10,11 +10,11 @@
        [(reverse graph) (rest tokens)]
        (graph-eof (conj graph frst) (rest tokens))))))
 
-(defn tokens->graph-exp
+(defn tokens->graphs
   ([tokens]
-   (tokens->graph-exp '() tokens))
+   (tokens->graphs '() tokens))
   ([graphs tokens]
    (if (= nil (first tokens))
      graphs
      (let [[graph rest] (graph-eof tokens)]
-       (concat (conj graphs graph) (tokens->graph-exp rest))))))
+       (concat (conj graphs graph) (tokens->graphs rest))))))

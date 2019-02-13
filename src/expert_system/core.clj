@@ -18,8 +18,8 @@
   (let [lines  (open-file-lines (first args))
         tokens (lines->tokens lines)]
     (println tokens)
-    (let [graph-exp (tokens->graph-exp tokens)]
+    (let [graph-exp (tokens->graphs tokens)]
       (println "---")
-      (println graph-exp)))
+      (println(filter #(> (count %) 0) graph-exp)))
   ;(my-print-list tokens)
-  )
+  ))

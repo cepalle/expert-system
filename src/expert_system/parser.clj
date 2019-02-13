@@ -80,6 +80,18 @@
        (concat (conj splt els) (split-eof rest))))))
 
 ; --- PARSER
+
+(defstruct parser-struct :queries :facts :exps)
+
 (defn parser [tokens]
   (let [splt-eof (split-eof tokens)]
-    (filter #(> (count %) 0) (map tokens->exp splt-eof))))
+    (let [exps   (filter #(> (count %) 0) (map tokens->exp splt-eof))
+          st-rev (reduce
+                  (fn [st el-next]
+                    (cond
+                      (= (first el-next) :queries) (struct parser-struct (rest el-next) (:facts st) (:exps st))
+                      (= (first el-next) :facts)   (struct parser-struct (:queries st) (rest el-next) (:exps st))
+                      :else                        (struct parser-struct (:queries st) (:facts st) (conj (:exps st) el-next))))
+                  (struct parser-struct nil nil '())
+                  exps)]
+      (struct parser-struct (:queries st-rev) (:facts st-rev) (reverse (:exps st-rev))))))

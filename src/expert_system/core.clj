@@ -14,12 +14,16 @@
   (doseq [item list]
     (println item)))
 
+(defn print-prop [exps]
+  (doseq [[idx exp] (map-indexed vector exps)]
+    (println (str "P" idx ":") exp)))
+
 (defn -main [& args]
   (let [lines  (open-file-lines (first args))
         tokens (lexer lines)]
     (println tokens)
     (let [graph-exp (parser tokens)]
       (println "---")
-      (my-print-list graph-exp))
-  ;(my-print-list tokens)
-  ))
+      (println "Queries: " (:queries graph-exp))
+      (println "Facts: " (:facts graph-exp))
+      (print-prop (:exps graph-exp)))))

@@ -22,12 +22,13 @@
 (defn -main [& args]
   (let [lines  (open-file-lines (first args))
         tokens (lexer lines)]
+    (println "--- LEXER")
     (println tokens)
     (let [st-parser (parser tokens)]
-      (println "---")
+      (println "--- PARSER")
       (println "Queries: " (:queries st-parser))
       (println "Facts: " (:facts st-parser))
       (print-prop (:exps st-parser))
-      (let [result (resolve st-parser)]
-        (println "---")
+      (let [result (resolve-grph st-parser)]
+        (println "--- RESULT")
         (println result)))))

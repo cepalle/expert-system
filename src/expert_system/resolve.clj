@@ -1,19 +1,29 @@
-(defn gen-next-map
-  ([map-var]
-   (gen-next-map 1 map-var))
-  ([re map-var]
-   (let [[key val] (first map-var)]
-     (cond
-       (or (= key nil) (= val nil)) {}
-       (and (= re 1) (= val 1))     (merge (gen-next-map 1 (into (sorted-map) (rest map-var))) {key 0})
-       :else                        (merge map-var {key 1})))))
+(comment
+  (defn check-map-var-exp? [map-var exp]
+    true)
+
+  (defn check-map-var-exps? [map-var exps]
+    (reduce
+     (fn [has-false exp]
+       (cond
+         (has-false)                            false
+         (not (check-map-var-exp? map-var exp)) false
+         :else                                  (check-map-var-exps? map-var (rest exps))))
+     false exps)))
+
+; --- MAP
+(defn gen-next-map [map-var]
+  (let [[key val] (first map-var)]
+    (cond
+      (or (= key nil) (= val nil)) {}
+      val                          (merge (gen-next-map (into (sorted-map) (rest map-var))) {key false})
+      :else                        (merge map-var {key true}))))
 
 (defn print-all-map-var [map-var]
   (loop [mp-var map-var]
-    (println mp-var)
     (let [mp-var-next (gen-next-map mp-var)]
       (println mp-var-next)
-      (if (some (fn [[key val]] (= val 0)) mp-var-next)
+      (if (some (fn [[key val]] (= val false)) mp-var-next)
         (recur mp-var-next)))))
 
 ; --- UTILS
@@ -42,6 +52,6 @@
         exps                       (:exps st-parser)
         field-in-exps              (epxs->fields exps)
         field-in-exps-not-in-facts (filter #(not (in? facts %)) field-in-exps)
-        map-true                   (init-map facts 1)
-        map-var                    (init-map field-in-exps-not-in-facts 0)]
+        map-true                   (init-map facts true)
+        map-var                    (init-map field-in-exps-not-in-facts false)]
     (print-all-map-var map-var)))

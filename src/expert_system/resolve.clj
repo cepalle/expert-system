@@ -9,10 +9,12 @@
        :else                        (merge map-var {key 1})))))
 
 (defn print-all-map-var [map-var]
-  (println map-var)
-  (let [mp-var-next (gen-next-map map-var)]
-    (if (some (fn [[key val]] (= val 0)) mp-var-next)
-      (print-all-map-var mp-var-next))))
+  (loop [mp-var map-var]
+    (println mp-var)
+    (let [mp-var-next (gen-next-map mp-var)]
+      (println mp-var-next)
+      (if (some (fn [[key val]] (= val 0)) mp-var-next)
+        (recur mp-var-next)))))
 
 ; --- UTILS
 (defn init-map [keys val]

@@ -2,6 +2,7 @@
 
 (load "lexer")
 (load "parser")
+(load "resolve")
 
 (defn open-file-lines [fileName]
   (with-open [rdr (clojure.java.io/reader fileName)]
@@ -22,8 +23,11 @@
   (let [lines  (open-file-lines (first args))
         tokens (lexer lines)]
     (println tokens)
-    (let [graph-exp (parser tokens)]
+    (let [st-parser (parser tokens)]
       (println "---")
-      (println "Queries: " (:queries graph-exp))
-      (println "Facts: " (:facts graph-exp))
-      (print-prop (:exps graph-exp)))))
+      (println "Queries: " (:queries st-parser))
+      (println "Facts: " (:facts st-parser))
+      (print-prop (:exps st-parser))
+      (let [result (resolve st-parser)]
+        (println "---")
+        (println result)))))

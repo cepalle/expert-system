@@ -43,7 +43,7 @@
 
 (defn parse-exp
   ([nl tokens]
-   (if (in? tokens :par-open)
+   (if (or (in? tokens :par-open) (in? tokens :par-close))
      (parse-exp '() '() 0 nl tokens)
      (first (parse-neg tokens))))
   ([exp in-par nb-par-open nl tokens]
@@ -55,8 +55,9 @@
                                                      (exit-parser nl))
        (and (= frst :par-open) (= nb-par-open 0))  (parse-exp exp in-par (inc nb-par-open) nl rst)
        (and (= frst :par-open) (> nb-par-open 0))  (parse-exp exp (conj in-par frst) (inc nb-par-open) nl rst)
-       (and (= frst :par-close) (= nb-par-open 1)) (parse-exp (conj exp (list :par (parse-exp (reverse in-par)))) '() (dec nb-par-open) nl rst)
+       (and (= frst :par-close) (= nb-par-open 1)) (parse-exp (conj exp (list :par (parse-exp nl (reverse in-par)))) '() (dec nb-par-open) nl rst)
        (and (= frst :par-close) (> nb-par-open 1)) (parse-exp exp (conj in-par frst) (dec nb-par-open) nl rst)
+       (and (= frst :par-close) (< nb-par-open 1)) (exit-parser nl)
        (> nb-par-open 0)                           (parse-exp exp (conj in-par frst) nb-par-open nl rst)
        :else                                       (parse-exp (conj exp frst) in-par nb-par-open nl rst)))))
 

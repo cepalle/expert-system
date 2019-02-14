@@ -56,13 +56,10 @@
 
 ; --- EXTRACT FIELD
 (defn exp->fields [exp]
-  (map
-   (fn [ep]
-     (cond
-       (list? ep) (exp->fields ep)
-       (char? ep) ep
-       :else      nil))
-   exp))
+  (cond
+    (char? exp) exp
+    (list? exp) (map exp->fields exp)
+    :else       nil))
 
 (defn epxs->fields [exps]
   (filter #(not (= nil %)) (set (flatten (map exp->fields exps)))))

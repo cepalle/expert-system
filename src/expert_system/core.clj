@@ -20,8 +20,19 @@
     (println (str "P" idx ":") exp)))
 
 (defn -main [& args]
-  (let [lines    (open-file-lines (first args))
-        l-tokens (lexer lines)]
+  (let [frst-arg  (first args)
+        file-name (if (= frst-arg nil)
+                    (do
+                      (println "Usage: lein run ./path/file")
+                      (System/exit 0))
+                    frst-arg)
+        lines     (try
+                    (open-file-lines file-name)
+                    (catch Exception ex
+                      (do
+                        (println "Open file:" file-name "failed")
+                        (System/exit 1))))
+        l-tokens  (lexer lines)]
     ;(println "--- LEXER")
     ;(my-print-list l-tokens)
     (let [st-parser (parser l-tokens)]

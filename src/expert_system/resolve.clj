@@ -92,7 +92,7 @@
 
 (defn get-queris-res [map-res queris]
   (if (= (count map-res) 0)
-    {"INVALID EXPRESSION" nil}
+    {"INVALID PROPOSITION" nil}
     (get-queris-res-recur map-res queris)))
 
 (defn resolve-grph [st-parser]

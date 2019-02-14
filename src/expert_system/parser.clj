@@ -85,13 +85,14 @@
 
 (defn parser [tokens]
   (let [splt-eof (split-eof tokens)]
-    (let [exps   (filter #(> (count %) 0) (map tokens->exp splt-eof))
+    (let [exps   (filter #(or (char? %1) (> (count %1) 0)) (map tokens->exp splt-eof))
           st-rev (reduce
-                  (fn [st el-next]
+                  (fn [st exp]
                     (cond
-                      (= (first el-next) :queries) (struct parser-struct (rest el-next) (:facts st) (:exps st))
-                      (= (first el-next) :facts)   (struct parser-struct (:queries st) (rest el-next) (:exps st))
-                      :else                        (struct parser-struct (:queries st) (:facts st) (conj (:exps st) el-next))))
+                      (char? exp)              (struct parser-struct (:queries st) (:facts st) (conj (:exps st) exp))
+                      (= (first exp) :queries) (struct parser-struct (rest exp) (:facts st) (:exps st))
+                      (= (first exp) :facts)   (struct parser-struct (:queries st) (rest exp) (:exps st))
+                      :else                    (struct parser-struct (:queries st) (:facts st) (conj (:exps st) exp))))
                   (struct parser-struct nil nil '())
                   exps)]
       (struct parser-struct (:queries st-rev) (:facts st-rev) (reverse (:exps st-rev))))))

@@ -37,55 +37,57 @@
        (and (= frst :neg) (not (= (first rst) :neg))) (parse-neg (conj exp (list :neg (first rst))) (rest rst))
        :else                                          (parse-neg (conj exp frst) rst)))))
 
-(defn parse-par
+(defn parse-exp
   ([tokens]
    (if (in? tokens :par-open)
-     (parse-par '() '() 0 tokens)
+     (parse-exp '() '() 0 tokens)
      (first (parse-neg tokens))))
   ([exp in-par nb-par-open tokens]
    (let [frst (first tokens)
          rst  (rest tokens)]
      (cond
-       (= frst nil)                                (parse-par (reverse exp))
-       (and (= frst :par-open) (= nb-par-open 0))  (parse-par exp in-par (inc nb-par-open) rst)
-       (and (= frst :par-open) (> nb-par-open 0))  (parse-par exp (conj in-par frst) (inc nb-par-open) rst)
-       (and (= frst :par-close) (= nb-par-open 1)) (parse-par (conj exp (list :par (parse-par (reverse in-par)))) '() (dec nb-par-open) rst)
-       (and (= frst :par-close) (> nb-par-open 1)) (parse-par exp (conj in-par frst) (dec nb-par-open) rst)
-       (> nb-par-open 0)                           (parse-par exp (conj in-par frst) nb-par-open rst)
-       :else                                       (parse-par (conj exp frst) in-par nb-par-open rst)))))
+       (= frst nil)                                (parse-exp (reverse exp))
+       (and (= frst :par-open) (= nb-par-open 0))  (parse-exp exp in-par (inc nb-par-open) rst)
+       (and (= frst :par-open) (> nb-par-open 0))  (parse-exp exp (conj in-par frst) (inc nb-par-open) rst)
+       (and (= frst :par-close) (= nb-par-open 1)) (parse-exp (conj exp (list :par (parse-exp (reverse in-par)))) '() (dec nb-par-open) rst)
+       (and (= frst :par-close) (> nb-par-open 1)) (parse-exp exp (conj in-par frst) (dec nb-par-open) rst)
+       (> nb-par-open 0)                           (parse-exp exp (conj in-par frst) nb-par-open rst)
+       :else                                       (parse-exp (conj exp frst) in-par nb-par-open rst)))))
 
-(defn tokens->exp [tokens]
+(defn parse-queries [nl tokens]
+  (let [frst (first tokens)
+        rst  (rest tokens)]
+    (if (and (= frst :queries) (not (some #(not (char? %)) rst)))
+      tokens
+      (do
+        (println "Parser: invalid syntaxe line:" (inc nl))
+        (System/exit 0)))))
+
+(defn parse-facts [nl tokens]
+  (let [frst (first tokens)
+        rst  (rest tokens)]
+    (if (and (= frst :facts) (not (some #(not (char? %)) rst)))
+      tokens
+      (do
+        (println "Parser: invalid syntaxe line:" (inc nl))
+        (System/exit 0)))))
+
+(defn tokens->exp [nl tokens]
   (cond
-    (= (first tokens) :queries) tokens
-    (= (first tokens) :facts)   tokens
-    :else                       (parse-par tokens)))
-
-; --- EOF
-(defn graph-eof
-  ([tokens]
-   (graph-eof '() tokens))
-  ([els tokens]
-   (let [frst (first tokens)]
-     (if (or (= frst :eol) (= frst nil))
-       [(reverse els) (rest tokens)]
-       (graph-eof (conj els frst) (rest tokens))))))
-
-(defn split-eof
-  ([tokens]
-   (split-eof '() tokens))
-  ([splt tokens]
-   (if (= nil (first tokens))
-     splt
-     (let [[els rest] (graph-eof tokens)]
-       (concat (conj splt els) (split-eof rest))))))
+    (in? tokens :queries)       (parse-queries nl tokens)
+    (in? tokens :facts)         (parse-facts nl tokens)
+    :else                       (parse-exp tokens)))
 
 ; --- PARSER
-
 (defstruct parser-struct :queries :facts :exps)
 
-(defn parser [tokens]
-  (let [splt-eof (split-eof tokens)]
-    (let [exps   (filter #(or (char? %1) (> (count %1) 0)) (map tokens->exp splt-eof))
+(defn parser [l-tokens]
+  (println "--- TEST")
+  (let [tmp (map-indexed tokens->exp l-tokens)]
+    (doseq [l tmp]
+      (println l)))
+  (comment
+    (let [exps   (map tokens->exp l-tokens)
           st-rev (reduce
                   (fn [st exp]
                     (cond

@@ -102,18 +102,4 @@
         maps-var-good              (get-maps-good map-var map-true exps)
         map-res                    (map #(merge % map-true) maps-var-good)
         res                        (get-queris-res map-res queris)]
-    (comment (println "--- RESOLVE CALLBACK")
-      (all-map-var-callback map-var
-                            (fn [mp-var]
-                              (let [full-map (merge mp-var map-true)]
-                                (println full-map (check-map-var-exps? full-map exps)))))
-
-      (println "--- RESOLVE MAPS GOOD")
-      (doseq [map-var-good maps-var-good]
-        (println map-var-good (check-map-var-exps? (merge map-var-good map-true) exps)))
-
-      (println "--- RESOLVE MAPS RESULT")
-      (doseq [queri queris]
-        (println queri (get-field-res maps-var-good map-true queri))))
-    ;(println map-res queris)
     res))

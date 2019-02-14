@@ -3,7 +3,6 @@
   [coll elm]
   (some #(= elm %) coll))
 
-; --- use for order
 (def tokens
   '(:eol
     :queries

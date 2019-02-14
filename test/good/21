@@ -1,0 +1,7 @@
+C | B <=> B | A
+A => E
+A + B => F
+A + B + C => G
+
+=A
+?ABCDEFG

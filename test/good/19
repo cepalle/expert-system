@@ -1,0 +1,14 @@
+A => C | D
+C => F
+K <=> A
+C => X
+!X => L
+=A
+?CDFAKXL
+# C N
+# D N
+# F N
+# A V
+# K V
+# X N
+# L N

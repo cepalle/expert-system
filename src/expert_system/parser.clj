@@ -98,19 +98,17 @@
 (defstruct parser-struct :queries :facts :exps)
 
 (defn parser [l-tokens]
-  (println "--- TEST")
-  (let [tmp (map-indexed tokens->exp l-tokens)]
-    (doseq [l tmp]
-      (println l)))
-  (comment
-    (let [exps   (map tokens->exp l-tokens)
-          st-rev (reduce
-                  (fn [st exp]
-                    (cond
-                      (char? exp)              (struct parser-struct (:queries st) (:facts st) (conj (:exps st) exp))
-                      (= (first exp) :queries) (struct parser-struct (rest exp) (:facts st) (:exps st))
-                      (= (first exp) :facts)   (struct parser-struct (:queries st) (rest exp) (:exps st))
-                      :else                    (struct parser-struct (:queries st) (:facts st) (conj (:exps st) exp))))
-                  (struct parser-struct '() '() '())
-                  exps)]
-      (struct parser-struct (:queries st-rev) (:facts st-rev) (reverse (:exps st-rev))))))
+  (let [exps      (map-indexed tokens->exp l-tokens)
+        not-empty (filter (fn [exp] (or (char? exp) (> (count exp) 0))) exps)
+        res-tmp   (reduce
+                   (fn [st exp]
+                     (cond
+                       (char? exp)              (merge st {:exps (conj (:exps st) exp)})
+                       (= (first exp) :queries) (merge st {:queries (concat (:queries st) (rest exp))})
+                       (= (first exp) :facts)   (merge st {:facts (concat (:facts st) (rest exp))})
+                       :else                    (merge st {:exps (conj (:exps st) exp)})))
+                   {:queries '() :facts '() :exps '()} not-empty)]
+    {:queries (seq (set (:queries res-tmp)))
+     :facts   (seq (set (:facts res-tmp)))
+     :exps    (reverse (:exps res-tmp))}))
+

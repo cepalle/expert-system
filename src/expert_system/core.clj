@@ -20,18 +20,16 @@
     (println (str "P" idx ":") exp)))
 
 (defn -main [& args]
-  (let [lines  (open-file-lines (first args))
+  (let [lines    (open-file-lines (first args))
         l-tokens (lexer lines)]
-    (println "--- LEXER")
-    (my-print-list l-tokens)
-
+    ;(println "--- LEXER")
+    ;(my-print-list l-tokens)
     (let [st-parser (parser l-tokens)]
       (println "--- PARSER")
       (println "Queries: " (:queries st-parser))
       (println "Facts: " (:facts st-parser))
       (print-prop (:exps st-parser))
 
-      (comment
-        (let [result (resolve-grph st-parser)]
-          (println "--- RESULT")
-          (println result))))))
+      (let [result (resolve-grph st-parser)]
+        (println "--- RESULT")
+        (println result)))))

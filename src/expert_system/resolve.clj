@@ -5,7 +5,6 @@
 
 (defn my-impl-right [bool1 bool2] (or (not bool1) bool2))
 (defn my-impl-left [bool1 bool2] (my-impl-right bool2 bool1))
-(defn my-equival [bool1 bool2] (= bool1 bool2))
 
 (defn check-map-var-exp? [map-var exp]
   (if (char? exp)
@@ -21,17 +20,17 @@
         :xor        (my-xor (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
         :impl-left  (my-impl-left (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
         :impl-right (my-impl-right (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
-        :equival    (my-equival (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
+        :equival    (= (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
         :else       true))))
 
 (defn check-map-var-exps? [map-var exps]
   (not
-    (reduce
-     (fn [has-false exp]
-       (if has-false
-         true
-         (not (check-map-var-exp? map-var exp))))
-     false exps)))
+   (reduce
+    (fn [has-false exp]
+      (if has-false
+        true
+        (not (check-map-var-exp? map-var exp))))
+    false exps)))
 
 ; --- MAP VAR
 (defn gen-next-map [map-var]
@@ -80,13 +79,16 @@
         (recur maps-good-next (gen-next-map map-var))
         maps-good-next))))
 
-(defn get-field-res [maps-var-good map-true queri]
-  (cond
-    (= (get map-true queri) true)                         true
-    (some #(= (get % queri) nil) maps-var-good)           nil
-    (not (some #(= (get % queri) true) maps-var-good))    false
-    (not (some #(= (get % queri) false) maps-var-good))   true
-    :else                                                 nil))
+(defn get-queris-res [map-res queris]
+  (let [frst (first queris)
+        next #(get-queris-res map-res (rest queris))]
+    (if (= frst nil)
+      {}
+      (cond
+        (some #(= (get % frst) nil) map-res)         (merge {frst nil} (next))
+        (not (some #(= (get % frst) true) map-res))  (merge {frst false} (next))
+        (not (some #(= (get % frst) false) map-res)) (merge {frst true} (next))
+        :else                                        (merge {frst nil} (next))))))
 
 (defn resolve-grph [st-parser]
   (let [queris                     (:queries st-parser)
@@ -95,15 +97,15 @@
         field-in-exps              (epxs->fields exps)
         field-in-exps-not-in-facts (filter #(not (in? facts %)) field-in-exps)
         map-true                   (init-map facts true)
-        map-var                    (init-map field-in-exps-not-in-facts false)]
-
-    (println "--- RESOLVE CALLBACK")
-    (all-map-var-callback map-var
-                          (fn [mp-var]
-                            (let [full-map (merge mp-var map-true)]
-                              (println full-map (check-map-var-exps? full-map exps)))))
-
-    (let [maps-var-good (get-maps-good map-var map-true exps)]
+        map-var                    (init-map field-in-exps-not-in-facts false)
+        maps-var-good              (get-maps-good map-var map-true exps)
+        map-res                    (map #(merge % map-true) maps-var-good)
+        res                        (get-queris-res map-res queris)]
+    (comment (println "--- RESOLVE CALLBACK")
+      (all-map-var-callback map-var
+                            (fn [mp-var]
+                              (let [full-map (merge mp-var map-true)]
+                                (println full-map (check-map-var-exps? full-map exps)))))
 
       (println "--- RESOLVE MAPS GOOD")
       (doseq [map-var-good maps-var-good]
@@ -111,4 +113,6 @@
 
       (println "--- RESOLVE MAPS RESULT")
       (doseq [queri queris]
-        (println queri (get-field-res maps-var-good map-true queri))))))
+        (println queri (get-field-res maps-var-good map-true queri))))
+    ;(println map-res queris)
+    res))

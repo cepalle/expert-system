@@ -79,9 +79,9 @@
         (recur maps-good-next (gen-next-map map-var))
         maps-good-next))))
 
-(defn get-queris-res [map-res queris]
+(defn get-queris-res-recur [map-res queris]
   (let [frst (first queris)
-        next #(get-queris-res map-res (rest queris))]
+        next #(get-queris-res-recur map-res (rest queris))]
     (if (= frst nil)
       {}
       (cond
@@ -89,6 +89,11 @@
         (not (some #(= (get % frst) true) map-res))  (merge {frst false} (next))
         (not (some #(= (get % frst) false) map-res)) (merge {frst true} (next))
         :else                                        (merge {frst nil} (next))))))
+
+(defn get-queris-res [map-res queris]
+  (if (= (count map-res) 0)
+    {"INVALID EXPRESSION" nil}
+    (get-queris-res-recur map-res queris)))
 
 (defn resolve-grph [st-parser]
   (let [queris                     (:queries st-parser)

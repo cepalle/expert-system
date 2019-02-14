@@ -12,6 +12,10 @@
 
 (declare seq-c->tokens)
 
+(defn exit-lexer [nl cl]
+  (println "Lexer: invalid char line:" (inc nl) "col:" (inc cl))
+  (System/exit 0))
+
 (defn get-token-multi-char [nl cl seq-c]
   (let [frst-char (first seq-c)
         scnd-char (second seq-c)
@@ -21,9 +25,7 @@
       (and (= frst-char \<) (= scnd-char \=))                  (conj (seq-c->tokens nl (+ cl 2) (rest (rest seq-c))) :impl-left)
       (and (= frst-char \=) (= scnd-char \>))                  (conj (seq-c->tokens nl (+ cl 2) (rest (rest seq-c))) :impl-right)
       (= frst-char \=)                                         (conj (seq-c->tokens nl (inc cl) (rest seq-c)) :facts)
-      :else                                                    (do
-                                                                 (println "Lexer: invalid char line:" (inc nl) "col:" (inc cl))
-                                                                 (System/exit 0)))))
+      :else                                                    (exit-lexer nl cl))))
 
 (defn seq-c->tokens
   ([nl seq-c]
@@ -36,9 +38,7 @@
        (in? (seq "()!+|^?") frst)                                              (conj (seq-c->tokens nl (inc cl) (rest seq-c)) (choose-token-mono-char frst))
        (in? (seq "=<>") frst)                                                  (get-token-multi-char nl cl seq-c)
        (in? (seq " ") frst)                                                    (seq-c->tokens nl (inc cl) (rest seq-c))
-       :else                                                                   (do
-                                                                                 (println "Lexer: invalid char line:" (inc nl) "col:" (inc cl))
-                                                                                 (System/exit 0))))))
+       :else                                                                   (exit-lexer nl cl)))))
 
 (defn del-coms [seq-c]
   (let [frst (first seq-c)]

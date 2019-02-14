@@ -1,5 +1,9 @@
 (load "util")
 
+(defn exit-parser [nl]
+  (println "Parser: invalid syntaxe line:" (inc nl))
+  (System/exit 0))
+
 ; --- EXP
 (defn make-parse-arity-2 [op next]
   (fn parse-fn
@@ -38,45 +42,40 @@
        :else                                          (parse-neg (conj exp frst) rst)))))
 
 (defn parse-exp
-  ([tokens]
+  ([nl tokens]
    (if (in? tokens :par-open)
-     (parse-exp '() '() 0 tokens)
+     (parse-exp '() '() 0 nl tokens)
      (first (parse-neg tokens))))
-  ([exp in-par nb-par-open tokens]
+  ([exp in-par nb-par-open nl tokens]
    (let [frst (first tokens)
          rst  (rest tokens)]
      (cond
-       (= frst nil)                                (parse-exp (reverse exp))
-       (and (= frst :par-open) (= nb-par-open 0))  (parse-exp exp in-par (inc nb-par-open) rst)
-       (and (= frst :par-open) (> nb-par-open 0))  (parse-exp exp (conj in-par frst) (inc nb-par-open) rst)
-       (and (= frst :par-close) (= nb-par-open 1)) (parse-exp (conj exp (list :par (parse-exp (reverse in-par)))) '() (dec nb-par-open) rst)
-       (and (= frst :par-close) (> nb-par-open 1)) (parse-exp exp (conj in-par frst) (dec nb-par-open) rst)
-       (> nb-par-open 0)                           (parse-exp exp (conj in-par frst) nb-par-open rst)
-       :else                                       (parse-exp (conj exp frst) in-par nb-par-open rst)))))
+       (= frst nil)                                (if (= nb-par-open 0)
+                                                     (parse-exp nl (reverse exp))
+                                                     (exit-parser nl))
+       (and (= frst :par-open) (= nb-par-open 0))  (parse-exp exp in-par (inc nb-par-open) nl rst)
+       (and (= frst :par-open) (> nb-par-open 0))  (parse-exp exp (conj in-par frst) (inc nb-par-open) nl rst)
+       (and (= frst :par-close) (= nb-par-open 1)) (parse-exp (conj exp (list :par (parse-exp (reverse in-par)))) '() (dec nb-par-open) nl rst)
+       (and (= frst :par-close) (> nb-par-open 1)) (parse-exp exp (conj in-par frst) (dec nb-par-open) nl rst)
+       (> nb-par-open 0)                           (parse-exp exp (conj in-par frst) nb-par-open nl rst)
+       :else                                       (parse-exp (conj exp frst) in-par nb-par-open nl rst)))))
 
-(defn parse-queries [nl tokens]
-  (let [frst (first tokens)
-        rst  (rest tokens)]
-    (if (and (= frst :queries) (not (some #(not (char? %)) rst)))
-      tokens
-      (do
-        (println "Parser: invalid syntaxe line:" (inc nl))
-        (System/exit 0)))))
+(defn make-parse-simple [tok]
+  (fn [nl tokens]
+    (let [frst (first tokens)
+          rst  (rest tokens)]
+      (if (and (= frst tok) (not (some #(not (char? %)) rst)))
+        tokens
+        (exit-parser nl)))))
 
-(defn parse-facts [nl tokens]
-  (let [frst (first tokens)
-        rst  (rest tokens)]
-    (if (and (= frst :facts) (not (some #(not (char? %)) rst)))
-      tokens
-      (do
-        (println "Parser: invalid syntaxe line:" (inc nl))
-        (System/exit 0)))))
+(def parse-queries (make-parse-simple :queries))
+(def parse-facts (make-parse-simple :facts))
 
 (defn tokens->exp [nl tokens]
   (cond
     (in? tokens :queries)       (parse-queries nl tokens)
     (in? tokens :facts)         (parse-facts nl tokens)
-    :else                       (parse-exp tokens)))
+    :else                       (parse-exp nl tokens)))
 
 ; --- PARSER
 (defstruct parser-struct :queries :facts :exps)

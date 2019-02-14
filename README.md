@@ -19,9 +19,7 @@ lein run test/good/12
 A resolver take a parser-struct in input:
 
 ```clojure
-(defstruct parser-struct :queries :facts :exps)
-
-(def example-parser-struct {
+(def example-parser-input {
   :queries '(\A \B \C) ; list of char
   :facts '(\E \H \J)   ; list of char
   :exps '(             ; list of exp
@@ -61,8 +59,7 @@ A resolver take a parser-struct in input:
         :xor        (my-xor (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
         :impl-left  (my-impl-left (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
         :impl-right (my-impl-right (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
-        :equival    (= (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
-        :else       true))))
+        :equival    (= (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))))))
 
 ; Where map-var:
 ; Map<char, bool>

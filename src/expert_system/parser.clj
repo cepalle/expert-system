@@ -93,6 +93,6 @@
                       (= (first exp) :queries) (struct parser-struct (rest exp) (:facts st) (:exps st))
                       (= (first exp) :facts)   (struct parser-struct (:queries st) (rest exp) (:exps st))
                       :else                    (struct parser-struct (:queries st) (:facts st) (conj (:exps st) exp))))
-                  (struct parser-struct nil nil '())
+                  (struct parser-struct '() '() '())
                   exps)]
       (struct parser-struct (:queries st-rev) (:facts st-rev) (reverse (:exps st-rev))))))

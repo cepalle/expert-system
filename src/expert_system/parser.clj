@@ -29,23 +29,26 @@
 (def parse-and (make-parse-arity-2 :and parse-or))
 
 (defn parse-neg
-  ([with-par]
-   (if (in? with-par :neg)
-     (parse-neg '() with-par)
-     (parse-and with-par)))
-  ([exp with-par]
-   (let [frst (first with-par)
-         rst  (rest with-par)]
+  ([nl tokens]
+   (if (in? tokens :neg)
+     (parse-neg '() nl tokens)
+     (parse-and tokens)))
+  ([exp nl tokens]
+   (let [frst (first tokens)
+         scnd (second tokens)
+         rst  (rest tokens)]
      (cond
-       (= frst nil)                                   (parse-neg (reverse exp))
-       (and (= frst :neg) (not (= (first rst) :neg))) (parse-neg (conj exp (list :neg (first rst))) (rest rst))
-       :else                                          (parse-neg (conj exp frst) rst)))))
+       (= frst nil)                                       (parse-neg nl (reverse exp))
+       (and (= frst :neg) (= scnd :neg))                  (parse-neg (conj exp frst) nl rst)
+       (and (= frst :neg) (or (char? scnd) (list? scnd))) (parse-neg (conj exp (list :neg scnd)) nl (rest rst))
+       (= frst :neg)                                      (exit-parser nl)
+       :else                                              (parse-neg (conj exp frst) nl rst)))))
 
 (defn parse-exp
   ([nl tokens]
    (if (or (in? tokens :par-open) (in? tokens :par-close))
      (parse-exp '() '() 0 nl tokens)
-     (first (parse-neg tokens))))
+     (first (parse-neg nl tokens))))
   ([exp in-par nb-par-open nl tokens]
    (let [frst (first tokens)
          rst  (rest tokens)]

@@ -16,5 +16,4 @@
     :neg
     :par-open
     :par-close
-    :par
-    :field))
+    :par))

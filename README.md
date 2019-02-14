@@ -16,6 +16,8 @@ lein run test/good/12
 
 ## Resolver
 
+In src/expert_system/core.clj line 44: change `resolve-grph` for use your resolver.
+
 Resolver input:
 
 ```clojure

@@ -20,8 +20,7 @@
         :xor        (my-xor (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
         :impl-left  (my-impl-left (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
         :impl-right (my-impl-right (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
-        :equival    (= (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))
-        :else       true))))
+        :equival    (= (check-map-var-exp? map-var scnd) (check-map-var-exp? map-var thrd))))))
 
 (defn check-map-var-exps? [map-var exps]
   (not

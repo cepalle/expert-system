@@ -7,21 +7,34 @@
 ; --- EXP
 (defn make-parse-arity-2 [op next]
   (fn parse-fn
-    ([exps]
+    ([nl exps]
      (if (in? exps op)
-       (parse-fn '() exps)
-       (next exps)))
-    ([exps-befor exps-after]
+       (parse-fn '() nl exps)
+       (next nl exps)))
+    ([exps-befor nl exps-after]
      (let [frst (first exps-after)
            scnd (second exps-after)
            thrd (second (rest exps-after))]
        (cond
-         (= thrd nil)  (parse-fn (reverse exps-befor))
-         (= scnd op)   (parse-fn
-                        (concat (reverse (conj exps-befor (list op frst thrd))) (rest (rest (rest exps-after)))))
-         :else         (parse-fn (conj exps-befor frst) (rest exps-after)))))))
+         (= thrd nil) (exit-parser nl)
+         (and
+          (= scnd op)
+          (or (char? frst) (list? frst))
+          (or (char? thrd) (list? thrd))) (parse-fn nl
+                                                    (concat
+                                                     (reverse (conj exps-befor (list op frst thrd)))
+                                                     (rest (rest (rest exps-after)))))
+         :else        (parse-fn (conj exps-befor frst) nl (rest exps-after)))))))
 
-(def parse-equival (make-parse-arity-2 :equival identity))
+(def parse-equival
+  (make-parse-arity-2 :equival
+                      (fn [nl exps]
+                        (let [n (count exps)]
+                          (case n
+                            0     exps
+                            1     (first exps)
+                            (exit-parser nl))))))
+
 (def parse-impl-right (make-parse-arity-2 :impl-right parse-equival))
 (def parse-impl-left (make-parse-arity-2 :impl-left parse-impl-right))
 (def parse-xor (make-parse-arity-2 :xor parse-impl-left))
@@ -32,7 +45,7 @@
   ([nl tokens]
    (if (in? tokens :neg)
      (parse-neg '() nl tokens)
-     (parse-and tokens)))
+     (parse-and nl tokens)))
   ([exp nl tokens]
    (let [frst (first tokens)
          scnd (second tokens)
@@ -48,7 +61,7 @@
   ([nl tokens]
    (if (or (in? tokens :par-open) (in? tokens :par-close))
      (parse-exp '() '() 0 nl tokens)
-     (first (parse-neg nl tokens))))
+     (parse-neg nl tokens)))
   ([exp in-par nb-par-open nl tokens]
    (let [frst (first tokens)
          rst  (rest tokens)]

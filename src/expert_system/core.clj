@@ -24,11 +24,12 @@
         tokens (lexer lines)]
     (println "--- LEXER")
     (println tokens)
-    (let [st-parser (parser tokens)]
-      (println "--- PARSER")
-      (println "Queries: " (:queries st-parser))
-      (println "Facts: " (:facts st-parser))
-      (print-prop (:exps st-parser))
-      (let [result (resolve-grph st-parser)]
-        (println "--- RESULT")
-        (println result)))))
+    (comment
+      (let [st-parser (parser tokens)]
+        (println "--- PARSER")
+        (println "Queries: " (:queries st-parser))
+        (println "Facts: " (:facts st-parser))
+        (print-prop (:exps st-parser))
+        (let [result (resolve-grph st-parser)]
+          (println "--- RESULT")
+          (println result))))))

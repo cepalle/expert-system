@@ -10,31 +10,42 @@
     \^ :xor
     \? :queries))
 
-(defn get-token-multi-char [list-char next]
-  (let [frst-char (first list-char)
-        scnd-char (second list-char)
-        thrd-char (second (rest list-char))]
+(declare seq-c->tokens)
+
+(defn get-token-multi-char [nl cl seq-c]
+  (let [frst-char (first seq-c)
+        scnd-char (second seq-c)
+        thrd-char (second (rest seq-c))]
     (cond
-      (and (= frst-char \<) (= scnd-char \=) (= thrd-char \>)) (conj (next (rest (rest list-char))) :equival)
-      (and (= frst-char \<) (= scnd-char \=))                  (conj (next (rest (rest list-char))) :impl-left)
-      (and (= frst-char \=) (= scnd-char \>))                  (conj (next (rest (rest list-char))) :impl-right)
-      (= frst-char \=)                                         (conj (next (rest list-char)) :facts)
-      :else                                                    (next (rest list-char)))))
+      (and (= frst-char \<) (= scnd-char \=) (= thrd-char \>)) (conj (seq-c->tokens nl (+ cl 3) (rest (rest (rest seq-c)))) :equival)
+      (and (= frst-char \<) (= scnd-char \=))                  (conj (seq-c->tokens nl (+ cl 2) (rest (rest seq-c))) :impl-left)
+      (and (= frst-char \=) (= scnd-char \>))                  (conj (seq-c->tokens nl (+ cl 2) (rest (rest seq-c))) :impl-right)
+      (= frst-char \=)                                         (conj (seq-c->tokens nl (inc cl) (rest seq-c)) :facts)
+      :else                                                    (do
+                                                                 (println "Lexer: invalid char line:" (inc nl) "col:" (inc cl))
+                                                                 (System/exit 0)))))
 
-(defn list-char->tokens [idx list-char]
-  (let [frst-char (first list-char)
-        next      #(list-char->tokens idx %)]
-    (cond
-      (or (= frst-char nil) (= frst-char \#))                                      '(:eol)
-      (in? (seq "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") frst-char) (conj (next (rest list-char)) frst-char)
-      (in? (seq "()!+|^?") frst-char)                                              (conj (next (rest list-char)) (choose-token-mono-char frst-char))
-      (in? (seq "=<>") frst-char)                                                  (get-token-multi-char list-char next)
-      (in? (seq " \t\n") frst-char)                                                (next (rest list-char))
-      :else                                                                        (next (rest list-char)))))
+(defn seq-c->tokens
+  ([nl seq-c]
+   (seq-c->tokens nl 0 seq-c))
+  ([nl cl seq-c]
+   (let [frst      (first seq-c)]
+     (cond
+       (= frst nil)                                                            '()
+       (in? (seq "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") frst) (conj (seq-c->tokens nl (inc cl) (rest seq-c)) frst)
+       (in? (seq "()!+|^?") frst)                                              (conj (seq-c->tokens nl (inc cl) (rest seq-c)) (choose-token-mono-char frst))
+       (in? (seq "=<>") frst)                                                  (get-token-multi-char nl cl seq-c)
+       (in? (seq " ") frst)                                                    (seq-c->tokens nl (inc cl) (rest seq-c))
+       :else                                                                   (do
+                                                                                 (println "Lexer: invalid char line:" (inc nl) "col:" (inc cl))
+                                                                                 (System/exit 0))))))
 
-(defn line->tokens [[idx line]]
-  (list-char->tokens idx (seq line)))
+(defn del-coms [seq-c]
+  (let [frst (first seq-c)]
+    (if (or (= frst nil) (= frst \#))
+      '()
+      (conj (del-coms (rest seq-c)) frst))))
 
-(defn lines->tokens [lines] (mapcat line->tokens (map-indexed vector lines)))
+(defn line->tokens [nl line] (seq-c->tokens nl (del-coms (seq line))))
 
-(defn lexer [lines] (lines->tokens lines))
+(defn lexer [lines] (map-indexed line->tokens lines))

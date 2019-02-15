@@ -91,7 +91,7 @@
     {"INVALID PROPOSITION" nil}
     (get-queris-res-recur map-res queris)))
 
-(defn resolve-grph [st-parser]
+(defn resolve-table-grph [st-parser]
   (let [queris                     (:queries st-parser)
         facts                      (:facts st-parser)
         exps                       (:exps st-parser)

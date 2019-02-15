@@ -8,15 +8,20 @@
 
 ## run
 
-example:
+Usage:
 
+
+Backward resolver:
 ```
 lein run test/good/12
 ```
 
-## Resolver
+Table resolver:
+```
+lein run test/good/12 -f
+```
 
-In src/expert_system/core.clj line 44: change `resolve-grph` for use your resolver.
+## Resolver
 
 Resolver input:
 

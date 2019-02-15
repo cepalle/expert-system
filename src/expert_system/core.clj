@@ -2,7 +2,8 @@
 
 (load "lexer")
 (load "parser")
-(load "resolve")
+(load "resolve_table")
+(load "resolve_backward")
 
 (defn open-file-lines [fileName]
   (with-open [rdr (clojure.java.io/reader fileName)]
@@ -23,9 +24,10 @@
   (let [frst-arg  (first args)
         file-name (if (= frst-arg nil)
                     (do
-                      (println "Usage: lein run ./path/file")
+                      (println "Usage: lein run ./path/file [-f]")
                       (System/exit 0))
                     frst-arg)
+        opt-bool  (= (second args) "-f")
         lines     (try
                     (open-file-lines file-name)
                     (catch Exception ex
@@ -41,6 +43,8 @@
       (println "Facts: " (:facts st-parser))
       (print-prop (:exps st-parser))
 
-      (let [result (resolve-grph st-parser)]
+      (let [result (if opt-bool
+                     (resolve-table-grph st-parser)
+                     (resolve-backward-grph st-parser))]
         (println "--- RESULT")
         (println result)))))

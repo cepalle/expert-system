@@ -5,7 +5,6 @@
         res (not (or (some #{:xor} (flatten to-check))
                      (some #{:or} (flatten to-check))
                      (some #{:and} (flatten to-check))))
-        debug (println res to-check)
         ]
     res))
 

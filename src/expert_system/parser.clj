@@ -19,8 +19,8 @@
          (= thrd nil) (exit-parser nl)
          (and
           (= scnd op)
-          (or (char? frst) (list? frst))
-          (or (char? thrd) (list? thrd))) (parse-fn nl
+          (or (char? frst) (seq? frst))
+          (or (char? thrd) (seq? thrd))) (parse-fn nl
                                                     (concat
                                                      (reverse (conj exps-befor (list op frst thrd)))
                                                      (rest (rest (rest exps-after)))))
@@ -53,7 +53,7 @@
      (cond
        (= frst nil)                                       (parse-neg nl (reverse exp))
        (and (= frst :neg) (= scnd :neg))                  (parse-neg (conj exp frst) nl rst)
-       (and (= frst :neg) (or (char? scnd) (list? scnd))) (parse-neg (conj exp (list :neg scnd)) nl (rest rst))
+       (and (= frst :neg) (or (char? scnd) (seq? scnd))) (parse-neg (conj exp (list :neg scnd)) nl (rest rst))
        (= frst :neg)                                      (exit-parser nl)
        :else                                              (parse-neg (conj exp frst) nl rst)))))
 
@@ -96,7 +96,7 @@
 
 (defn del-par-exp [exp]
   (cond
-    (not (list? exp))    exp
+    (not (seq? exp))    exp
     (= (first exp) :par) (del-par-exp (second exp))
     :else                (map del-par-exp exp)))
 

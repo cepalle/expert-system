@@ -94,6 +94,12 @@
     (in? tokens :facts)         (parse-facts nl tokens)
     :else                       (parse-exp nl tokens)))
 
+(defn del-par-exp [exp]
+  (cond
+    (not (list? exp))    exp
+    (= (first exp) :par) (del-par-exp (second exp))
+    :else                (map del-par-exp exp)))
+
 ; --- PARSER
 (defstruct parser-struct :queries :facts :exps)
 
@@ -112,4 +118,4 @@
         facts-tmp   (seq (set (:facts res-tmp)))]
     {:queries (if (= queries-tmp nil) '() queries-tmp)
      :facts   (if (= facts-tmp nil) '() facts-tmp)
-     :exps    (reverse (:exps res-tmp))}))
+     :exps    (map del-par-exp (reverse (:exps res-tmp)))}))

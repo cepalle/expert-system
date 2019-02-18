@@ -57,7 +57,7 @@
 (defn exp->fields [exp]
   (cond
     (char? exp) exp
-    (list? exp) (map exp->fields exp)
+    (seq? exp) (map exp->fields exp)
     :else       nil))
 
 (defn epxs->fields [exps]

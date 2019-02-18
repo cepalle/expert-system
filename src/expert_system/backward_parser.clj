@@ -1,10 +1,10 @@
 (defn check-imp-right [exp]
   (or (not (list? (nth exp 2)))
-      (and (= (count (nth exp 2)) 2) (= (nth (nth exp 2) 0) :neg))))
+      (and (= (count (flatten (nth exp 2))) 2) (= (nth (nth exp 2) 0) :neg))))
 
 (defn check-imp-left [exp]
   (or (not (list? (nth exp 1)))
-      (and (= (count (nth exp 1)) 2) (= (nth (nth exp 1) 0) :neg))))
+      (and (= (count (flatten (nth exp 1))) 2) (= (nth (nth exp 1) 0) :neg))))
 
 (defn check-equival [exp]
   (or (check-imp-left exp) (check-imp-right exp)))

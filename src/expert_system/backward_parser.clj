@@ -1,27 +1,26 @@
-(defn check-imp-right [exp]
-  (or (not (list? (nth exp 2)))
-      (and (= (count (flatten (nth exp 2))) 2) (= (nth (nth exp 2) 0) :neg))))
-
-(defn check-imp-left [exp]
-  (or (not (list? (nth exp 1)))
-      (and (= (count (flatten (nth exp 1))) 2) (= (nth (nth exp 1) 0) :neg))))
-
-(defn check-equival [exp]
-  (or (check-imp-left exp) (check-imp-right exp)))
+(defn check-side-imp [exp side]
+  (let [to-check (if (= side "right")
+                   (last exp)
+                   (nth exp 1))
+        res (not (or (some #{:xor} (flatten to-check))
+                     (some #{:or} (flatten to-check))
+                     (some #{:and} (flatten to-check))))
+        debug (println res to-check)
+        ]
+    res))
 
 (defn imply-only-one [exp]
-  (let [expr (nth exp 0)
+  (let [expr (first exp)
         res     (cond
-                  (= (nth expr 0) :impl-left) (check-imp-left expr)
-                  (= (nth expr 0) :impl-right) (check-imp-right expr)
-                  (= (nth expr 0) :equival) (check-equival expr)
+                  (= (first expr) :impl-right) (check-side-imp expr "right")
+                  (= (first expr) :impl-left) (check-side-imp expr "left")
+                  (= (first expr) :equival) (or (check-side-imp expr "right") (check-side-imp expr "left"))
                   :else true
                   )]
     res))
 
 (defn check-all-imply [exps]
-  (every? identity (for [prop (map vector exps)]
-                     (imply-only-one prop))))
+  (every? identity (map imply-only-one (map vector exps))))
 
 (defn count-imp [str-exp]
   (+ (count (re-seq #":equival" str-exp))

@@ -1,7 +1,14 @@
 (load "backward_parser")
 
+(defn return-truable [exp]
+  (cond
+    (= (first exp) :impl-right) (first exp)
+    (= (first exp) :impl-left) (last exp)
+    (= (first exp) :equival) true
+    :else true))
+
 (defn find-truable [exps]
-  (println exps))
+  (map return-truable exps))
 
 (defn solve-backward [exps facts queries can-be-true]
   true)
@@ -11,6 +18,7 @@
         facts       (:facts st-parser)
         exps        (:exps st-parser)
         can-be-true (find-truable exps)
+        debug       (println "can be" can-be-true)
         res         (solve-backward exps facts queries can-be-true)
         ]
     res))

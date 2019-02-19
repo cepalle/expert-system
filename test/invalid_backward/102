@@ -1,0 +1,5 @@
+K => A | B
+J => F => A | B
+A | B => C
+=K
+?ABCKO

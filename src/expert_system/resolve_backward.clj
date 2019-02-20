@@ -7,29 +7,29 @@
         res (cond
               (and (char? side) (even? neg-counter)) side
               (or (keyword? side) (char? side)) ()
-              (not (seq? side)) '(bad)
               :else (flatten (map #(return-list-truable % new-count) side)))]
     res))
 
-(defn return-truable [exp]
+(defn return-truable [exp truable]
   (if (check-side-imp exp "right")
-    (return-list-truable (last exp) 0)
-    (return-list-truable (nth exp 1) 0)))
+    (return-list-truable (last exp) truable)
+    (return-list-truable (nth exp 1) truable)))
 
-(defn find-truable [exps]
-  (map return-truable exps))
+(defn find-truable [exps truable]
+  (map #(return-truable % truable) exps))
 
-(defn solve-backward [exps facts queries can-be-true]
+(defn solve-backward [exps facts queries truable falsable]
   true)
 
 (defn resolve-backward [st-parser]
-  (let [queries     (:queries st-parser)
-        facts       (:facts st-parser)
-        exps        (:exps st-parser)
-        debug-2     (println "Before")
-        can-be-true (doall (find-truable exps))
-        debug-1     (println "ok\ncan be" can-be-true)
-        res         (solve-backward exps facts queries can-be-true)
+  (let [queries      (:queries st-parser)
+        facts        (:facts st-parser)
+        exps         (:exps st-parser)
+        truable      (find-truable exps 0)
+        debug-1      (println "ok\ncan be" truable)
+        falsable     (find-truable exps 1)
+        debug-2      (println "ok\ncan be false" falsable)
+        res          (solve-backward exps facts queries truable falsable)
         ]
     res))
 

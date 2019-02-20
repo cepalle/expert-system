@@ -1,11 +1,20 @@
 (load "backward_parser")
 
+(defn return-list-truable [side neg-counter]
+  (let [new-count (if (and (seq? side) (= (first side) :neg))
+                     (+ 1 neg-counter)
+                     neg-counter)
+        res (cond
+              (and (char? side) (even? neg-counter)) side
+              (or (keyword? side) (char? side)) ()
+              (not (seq? side)) '(bad)
+              :else (flatten (map #(return-list-truable % new-count) side)))]
+    res))
+
 (defn return-truable [exp]
-  (cond
-    (= (first exp) :impl-right) (first exp)
-    (= (first exp) :impl-left) (last exp)
-    (= (first exp) :equival) true
-    :else true))
+  (if (check-side-imp exp "right")
+    (return-list-truable (last exp) 0)
+    (return-list-truable (nth exp 1) 0)))
 
 (defn find-truable [exps]
   (map return-truable exps))
@@ -17,15 +26,12 @@
   (let [queries     (:queries st-parser)
         facts       (:facts st-parser)
         exps        (:exps st-parser)
-        can-be-true (find-truable exps)
-        debug       (println "can be" can-be-true)
+        debug-2     (println "Before")
+        can-be-true (doall (find-truable exps))
+        debug-1     (println "ok\ncan be" can-be-true)
         res         (solve-backward exps facts queries can-be-true)
         ]
     res))
-
-
-(defn can-be-resolve [exps]
-  (and (check-imp exps) (check-all-imply exps)))
 
 
 (defn resolve-backward-grph [st-parser]

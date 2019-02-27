@@ -85,7 +85,7 @@
         truable-idx  (apply merge (distinct (map #(hash-map % (index-truable % truable)) (flatten truable))))
         res          (map #(solve-backward exps facts % truable-idx falsable) queries)
         ]
-    res))
+    (into {} res)))
 
 
 (defn resolve-backward-grph [st-parser]

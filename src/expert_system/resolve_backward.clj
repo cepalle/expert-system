@@ -1,5 +1,5 @@
 (load "backward_parser")
-(load "resolve_table")
+(load "op")
 
 (defn exp->equa [exp]
   (if (= (first exp) :impl-right)

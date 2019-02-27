@@ -14,8 +14,8 @@
 
 (defn return-list-truable [side neg-counter]
   (let [new-count (if (and (seq? side) (= (first side) :neg))
-                     (+ 1 neg-counter)
-                     neg-counter)
+                    (+ 1 neg-counter)
+                    neg-counter)
         res (cond
               (and (char? side) (even? neg-counter)) side
               (or (keyword? side) (char? side)) ()

@@ -1,5 +1,4 @@
 (load "backward_parser")
-(load "resolve_table")
 
 (defn exp->equa [exp]
   (if (= (first exp) :impl-right)
@@ -41,17 +40,16 @@
         cleared     (keep-indexed #(if (not (some (fn [elm] (= elm %)) idx-to-rm))
                                      %2)
                                   without)
-        res         (into {} cleared)
-        ]
+        res         (into {} cleared)]
     res))
 
 (defn test-prop [str-exp]
-  (eval (let [str-with-and (clojure.string/replace str-exp #":and" "and")
-                           str-with-or (clojure.string/replace str-with-and #":or" "or")
-                           str-with-not (clojure.string/replace str-with-or #":neg" "not")
-                           str-finished (clojure.string/replace str-with-not #":xor" "my-xor")
-                           debug (println "debug1230" str-finished)]
-                       (read-string str-finished))))
+  (load-string (let [str-with-and (clojure.string/replace str-exp #":and" "and")
+                     str-with-or (clojure.string/replace str-with-and #":or" "or")
+                     str-with-not (clojure.string/replace str-with-or #":neg" "not")
+                     ; here we recreate the xor func because eval (load-string) can't resolve a local func
+                     str-finished (clojure.string/replace str-with-not #":xor" "(fn [bool1 bool2] (if (and bool1 bool2) false (or bool1 bool2)))")]
+                 str-finished)))
 
 (defn resolve-recursive [str-exp exps facts query truable idx]
   (let [str-idx (if (> (count str-exp) idx)
@@ -69,8 +67,7 @@
               :else (some identity (map #(let [rep-idx   %
                                                new-trua  (remove-from-truable truable rep-idx)
                                                new-str   (clojure.string/replace str-exp (re-pattern (str str-idx)) (pr-str (exp->equa (nth exps rep-idx))))
-                                               res       (resolve-recursive new-str exps facts query new-trua idx)
-                                               ]
+                                               res       (resolve-recursive new-str exps facts query new-trua idx)]
                                            res)
                                         (get truable str-idx)))
               )
@@ -81,8 +78,6 @@
   (cond
     (re-seq (re-pattern (str query)) (str facts)) {query true}
     (not (get truable query)) {query false}
-    ;:else (println (second (get truable query)) "\n" (pr-str (exp->equa (nth exps (second (get truable query))))))
-    ;:else (resolve-recursive (pr-str (exp->equa (nth exps (second (get truable query))))) exps facts query truable 0)
     :else {query (boolean (some identity
                                 (map #(resolve-recursive (pr-str (exp->equa (nth exps %))) exps facts query truable 0)
                                      (get truable query))))}
@@ -95,7 +90,6 @@
         truable      (find-truable exps 0)
         falsable     (find-truable exps 1)
         truable-idx  (apply merge (distinct (map #(hash-map % (index-truable % truable)) truable)))
-        debug-6      (println truable-idx)
         res          (map #(solve-backward exps facts % truable-idx falsable) queries)
         ]
     res))

@@ -31,10 +31,7 @@
   (map #(return-truable % truable) exps))
 
 (defn remove-from-truable [truable idx query]
-  (let [removed (assoc-in truable (vector query) (remove #{idx} (get truable query)))
-        to-rm (remove not (map #(if (get removed %) %) (keys removed)))
-        res (apply dissoc removed to-rm)]
-        res))
+  (assoc-in truable (vector query) (remove #{idx} (get truable query))))
 
 (defn test-prop [str-exp]
   (load-string (let [str-with-and (clojure.string/replace str-exp #":and" "and")

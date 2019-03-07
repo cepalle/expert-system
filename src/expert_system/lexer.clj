@@ -34,7 +34,7 @@
    (let [frst      (first seq-c)]
      (cond
        (= frst nil)                                                            '()
-       (in? (seq "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz") frst) (conj (seq-c->tokens nl (inc cl) (rest seq-c)) frst)
+       (in? (seq "ABCDEFGHIJKLMNOPQRSTUVWXYZ") frst) (conj (seq-c->tokens nl (inc cl) (rest seq-c)) frst)
        (in? (seq "()!+|^?") frst)                                              (conj (seq-c->tokens nl (inc cl) (rest seq-c)) (choose-token-mono-char frst))
        (in? (seq "=<>") frst)                                                  (get-token-multi-char nl cl seq-c)
        (in? (seq " ") frst)                                                    (seq-c->tokens nl (inc cl) (rest seq-c))

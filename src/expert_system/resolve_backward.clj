@@ -45,27 +45,30 @@
                  str-finished)))
 
 (defn resolve-recursive [str-exp exps facts query truable idx is-true]
-  (let [str-idx (if (> (count str-exp) idx)
-                  (nth str-exp idx))
+  (let [char-idx (if (> (count str-exp) idx)
+                  (nth str-exp idx)
+                  nil)
         res (cond
               ; if finished
-              (<= (count str-exp) idx) (test-prop str-exp)
+              (or (<= (count str-exp) idx) (boolean (re-matches #"^[\(\)\:\ a-z]{1,}$" str-exp))) (test-prop str-exp)
               ; if value at idx str-exp contains "(): abc...xyz" return idx++
-              (re-matches #"[\(\)\:\ a-z]" (str str-idx)) (resolve-recursive str-exp exps facts query truable (inc idx) is-true)
+              (re-matches #"[\(\)\:\ a-z]" (str char-idx)) (resolve-recursive str-exp exps facts query truable (inc idx) is-true)
               ; if value is true, replace by true
-              (or (re-seq (re-pattern (str str-idx)) (str facts)) (re-seq (re-pattern (str str-idx)) (pr-str is-true))) (resolve-recursive (clojure.string/replace str-exp (re-pattern (str str-idx)) "true") exps facts query truable (inc idx) is-true)
+              (or (re-seq (re-pattern (str char-idx)) (str facts))
+                  (re-seq (re-pattern (str char-idx)) (pr-str is-true))) (resolve-recursive (clojure.string/replace str-exp (re-pattern (str char-idx)) "true") exps facts query truable (inc idx) is-true)
               ; if value can't be true replace letter by false
-              (not (get truable str-idx)) (resolve-recursive (clojure.string/replace str-exp (re-pattern (str str-idx)) "false") exps facts query truable (inc idx) is-true)
+              (not (get truable char-idx)) (resolve-recursive (clojure.string/replace str-exp (re-pattern (str char-idx)) "false") exps facts query truable (inc idx) is-true)
               ; else means variable can be replaced
               :else (some identity (map #(let [rep-idx   %
-                                               new-trua  (remove-from-truable truable rep-idx query)
-                                               new-str   (clojure.string/replace str-exp (re-pattern (str str-idx)) (pr-str (exp->equa (nth exps rep-idx))))
-                                               new-is-tr (if (resolve-recursive (pr-str (exp->equa (nth exps rep-idx))) exps facts str-idx new-trua 0 is-true)
-                                                           (concat is-true (list str-idx))
-                                                           is-true)
-                                               res       (resolve-recursive new-str exps facts query new-trua idx new-is-tr)]
+                                               new-trua    (remove-from-truable truable rep-idx query)
+                                               new-trua-b  (remove-from-truable new-trua rep-idx char-idx)
+                                               new-str     (clojure.string/replace str-exp (re-pattern (str char-idx)) (pr-str (exp->equa (nth exps rep-idx))))
+                                               new-is-tr   (if (resolve-recursive (pr-str (exp->equa (nth exps rep-idx))) exps facts char-idx new-trua-b 0 is-true)
+                                                             (concat is-true (list char-idx))
+                                                             is-true)
+                                               res         (resolve-recursive new-str exps facts query new-trua-b idx new-is-tr)]
                                            res)
-                                        (get truable str-idx)))
+                                        (get truable char-idx)))
               )
         ]
     res))
@@ -75,7 +78,9 @@
     (re-seq (re-pattern (str query)) (str facts)) {query true}
     (not (get truable query)) {query false}
     :else {query (boolean (some identity
-                                (map #(resolve-recursive (pr-str (exp->equa (nth exps %))) exps facts query truable 0 '())
+                                (map #(let [new-trua (remove-from-truable truable % query)
+                                            res (resolve-recursive (pr-str (exp->equa (nth exps %))) exps facts query new-trua 0 '())]
+                                       res)
                                      (get truable query))))}
     ))
 

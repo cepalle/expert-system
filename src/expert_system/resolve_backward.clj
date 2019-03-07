@@ -23,7 +23,7 @@
     res))
 
 (defn return-truable [exp truable]
-  (if (check-side-imp exp "right")
+  (if (= (first exp) :impl-right)
     (return-list-truable (last exp) truable)
     (return-list-truable (nth exp 1) truable)))
 
